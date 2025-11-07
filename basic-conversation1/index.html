@@ -1,148 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>European Portuguese Phrasebook</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Basic conversation 1</title>
 <style>
-body{font-family:sans-serif; background:#f9f9f9; color:#111; padding:20px; max-width:900px; margin:auto;}
-h1{font-size:28px; margin-bottom:15px; color:#0b69ff;}
-h2{font-size:22px; margin-top:25px; border-bottom:2px solid #ccc; padding-bottom:5px; color:#333; display:flex; justify-content:space-between; align-items:center;}
-table{width:100%; border-collapse:collapse; margin-top:10px; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,0.1);}
-th, td{padding:10px; text-align:left; border-bottom:1px solid #eee;}
-td.pt{font-weight:bold; width:45%;}
-td.en{width:45%; color:#555}
-td.actions{width:10%; text-align:center}
-button{padding:6px 12px; margin:2px; border-radius:6px; border:none; cursor:pointer; font-weight:bold;}
-button.play{background:#0b69ff; color:white; transition:0.3s;}
-button.play:hover{background:#094bb5;}
-button.playSlow{background:#ff7f50; color:white; transition:0.3s;}
-button.playSlow:hover{background:#e36b44;}
-button.control{background:#06c; color:white; transition:0.3s;}
-button.control:hover{background:#055bb0;}
-button.sectionRepeat{background:#0a8; color:white;}
-button.sectionRepeat:hover{background:#067;}
-.controls-container{margin-bottom:15px; display:flex; flex-wrap:wrap; gap:10px; align-items:center;}
-select#sectionSelect{padding:6px 10px; border-radius:5px; border:1px solid #ccc;}
-.quiz-container{margin-top:20px; padding:15px; border:1px solid #ccc; background:#eef; display:none; border-radius:6px;}
-.quiz-sentence{font-weight:bold; margin-bottom:10px;}
-.quiz-options button{margin:5px;}
-.feedback{margin-top:10px; font-weight:bold;}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; background:#fff; color:#111; padding:20px; max-width:1000px; margin:0 auto;}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+  h1{font-size:22px;margin:0;color:#0b69ff}
+  p.lead{margin:0;color:#444}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+  button, select{cursor:pointer;border-radius:6px;border:none;padding:8px 12px;font-weight:600}
+  .globalRepeat{background:#0a8;color:#fff}
+  .quizMode{background:#f59c1a;color:#fff}
+  .sectionRepeat{background:#06a;padding:8px 10px;color:#fff}
+  table{width:100%;border-collapse:collapse;margin-top:10px;background:#fafafa;border-radius:6px;overflow:hidden}
+  th,td{padding:10px;border-bottom:1px solid #eee;text-align:left}
+  td.pt{font-weight:700;width:46%}
+  td.en{color:#555;width:46%}
+  td.actions{text-align:right;width:8%}
+  button.play{background:#0b69ff;color:#fff}
+  button.playSlow{background:#58a6ff;color:#fff}
+  .quiz-area{margin-top:18px;border:1px solid #e6eef8;background:#f7fbff;padding:14px;border-radius:8px;display:none}
+  .quiz-q{font-weight:700;margin-bottom:12px}
+  .quiz-options button{margin:6px 8px 6px 0;padding:8px 12px}
+  .correct{outline:3px solid #0a8}
+  .incorrect{outline:3px solid #c33}
+  footer{margin-top:28px;color:#666;font-size:13px}
+  @media (max-width:640px){ td.actions{text-align:left} .controls{flex-direction:column;align-items:flex-start} }
 </style>
 </head>
 <body>
-<h1>European Portuguese Phrasebook</h1>
-<p>Play the audio for phrases, practice Listen & Repeat for sections or all sections, and try Quiz Mode to test your memory.</p>
+<header>
+  <div>
+    <h1>European Portuguese Phrasebook</h1>
+    <p class="lead">Play phrases, practice Listen & Repeat per section or all sections, and try Quiz Mode to test comprehension.</p>
+  </div>
+</header>
 
-<div class="controls-container">
-  <select id="sectionSelect">
-    <option value="all">All Sections</option>
-  </select>
-  <button class="control" id="listenRepeatAllBtn">Listen & Repeat All Sections</button>
-  <button class="control" id="quizBtn">Start Quiz</button>
+<div class="controls">
+  <button class="globalRepeat" id="globalRepeatBtn">Listen & Repeat All Sections</button>
+  <button class="quizMode" id="startQuizBtn">Start Quiz Mode</button>
 </div>
 
-<div id="phrasebook"></div>
-<div class="quiz-container" id="quizContainer">
-  <div class="quiz-sentence" id="quizSentence"></div>
-  <div class="quiz-options" id="quizOptions"></div>
-  <div class="feedback" id="quizFeedback"></div>
-  <button class="control" id="nextQuizBtn">Next</button>
-</div>
+<main id="phrasebook"></main>
+
+<section id="quizArea" class="quiz-area" aria-hidden="true">
+  <div id="quizQuestion" class="quiz-q"></div>
+  <div id="quizOptions" class="quiz-options"></div>
+  <div id="quizFeedback" style="margin-top:10px;font-weight:700"></div>
+  <div style="margin-top:12px"><button id="nextQuizBtn" style="background:#0b69ff;color:#fff">Next</button></div>
+</section>
+
+<footer>
+  <p>Make sure your audio files are in the <strong>/audio/</strong> folder and named <code>p1.mp3</code> … <code>p34.mp3</code>.</p>
+</footer>
 
 <script>
-const sections=[
-  {title:'Greetings', phrases:[{id:'p1',pt:'Olá.',en:'Hello.'},{id:'p2',pt:'Oi.',en:'Hi.'}]},
-  {title:'Times of Day', phrases:[{id:'p3',pt:'Bom dia.',en:'Good morning.'},{id:'p4',pt:'Boa tarde.',en:'Good afternoon.'},{id:'p5',pt:'Boa noite.',en:'Good evening / Good night.'}]},
-  {title:'How Are You?', phrases:[{id:'p6',pt:'Tudo bem?',en:'All good? / How are you?'},{id:'p7',pt:'Sim, tudo bem. E contigo?',en:'Yes, all good. And you?'},{id:'p8',pt:'Também está tudo bem.',en:'Everything\'s good too.'},{id:'p9',pt:'Como estás?',en:'How are you?'},{id:'p10',pt:'Estou bem. E tu?',en:'I\'m fine. And you?'},{id:'p11',pt:'Também estou bem.',en:'I\'m fine too.'}]},
-  {title:'Names & Introductions', phrases:[{id:'p12',pt:'Como te chamas?',en:'What\'s your name?'},{id:'p13',pt:'Chamo-me…',en:'My name is…'},{id:'p14',pt:'Eu sou o…',en:'I\'m (male)…'},{id:'p15',pt:'Qual é o teu nome?',en:'What\'s your name?'},{id:'p16',pt:'O meu nome é…',en:'My name is…'}]},
-  {title:'Meeting Someone', phrases:[{id:'p17',pt:'Prazer.',en:'Pleasure.'},{id:'p18',pt:'Muito prazer.',en:'Nice to meet you.'},{id:'p19',pt:'Prazer em te conhecer.',en:'Nice to meet you.'}]},
-  {title:'Where You\'re From & Where You Live', phrases:[{id:'p20',pt:'De onde és?',en:'Where are you from?'},{id:'p21',pt:'Eu sou da América.',en:'I\'m from America.'},{id:'p22',pt:'Eu sou da África do Sul.',en:'I\'m from South Africa.'},{id:'p23',pt:'Onde vives?',en:'Where do you live?'},{id:'p24',pt:'Eu vivo no Estoril.',en:'I live in Estoril.'},{id:'p25',pt:'Eu vivo em Cascais.',en:'I live in Cascais.'}]},
-  {title:'Age', phrases:[{id:'p26',pt:'Quantos anos tens?',en:'How old are you?'},{id:'p27',pt:'Eu tenho cinquenta e quatro anos.',en:'I\'m fifty-four years old.'},{id:'p28',pt:'Eu tenho cinquenta e três anos.',en:'I\'m fifty-three years old.'}]},
-  {title:'Work', phrases:[{id:'p29',pt:'Qual é o teu trabalho?',en:'What\'s your job?'},{id:'p30',pt:'Eu trabalho em operações e tecnologia.',en:'I work in operations and technology.'},{id:'p31',pt:'Eu sou reformado.',en:'I\'m retired.'}]},
-  {title:'Likes & Activities', phrases:[{id:'p32',pt:'O que é que gostas de fazer?',en:'What do you like to do?'},{id:'p33',pt:'Eu gosto de ir à praia.',en:'I like going to the beach.'},{id:'p34',pt:'Eu gosto de comer fora.',en:'I like eating out.'}]} 
+/* === Phrasebook data === */
+const sections = [
+  { title: 'Greetings', phrases:[{id:'p1',pt:'Olá.',en:'Hello.'},{id:'p2',pt:'Oi.',en:'Hi.'}]},
+  { title: 'Times of Day', phrases:[{id:'p3',pt:'Bom dia.',en:'Good morning.'},{id:'p4',pt:'Boa tarde.',en:'Good afternoon.'},{id:'p5',pt:'Boa noite.',en:'Good evening / Good night.'}]},
+  { title: 'How Are You?', phrases:[{id:'p6',pt:'Tudo bem?',en:'All good? / How are you?'},{id:'p7',pt:'Sim, tudo bem. E contigo?',en:'Yes, all good. And you?'},{id:'p8',pt:'Também está tudo bem.',en:"Everything's good too."},{id:'p9',pt:'Como estás?',en:'How are you?'},{id:'p10',pt:'Estou bem. E tu?',en:"I'm fine. And you?"},{id:'p11',pt:'Também estou bem.',en:"I'm fine too."}]},
+  { title: 'Names & Introductions', phrases:[{id:'p12',pt:'Como te chamas?',en:"What's your name?"},{id:'p13',pt:'Chamo-me…',en:'My name is…'},{id:'p14',pt:'Eu sou o…',en:"I'm (male)…"},{id:'p15',pt:'Qual é o teu nome?',en:"What's your name?"},{id:'p16',pt:'O meu nome é…',en:'My name is…'}]},
+  { title: 'Meeting Someone', phrases:[{id:'p17',pt:'Prazer.',en:'Pleasure.'},{id:'p18',pt:'Muito prazer.',en:'Nice to meet you.'},{id:'p19',pt:'Prazer em te conhecer.',en:'Nice to meet you.'}]},
+  { title: "Where You're From & Where You Live", phrases:[{id:'p20',pt:'De onde és?',en:'Where are you from?'},{id:'p21',pt:'Eu sou da América.',en:"I'm from America."},{id:'p22',pt:'Eu sou da África do Sul.',en:"I'm from South Africa."},{id:'p23',pt:'Onde vives?',en:'Where do you live?'},{id:'p24',pt:'Eu vivo no Estoril.',en:'I live in Estoril.'},{id:'p25',pt:'Eu vivo em Cascais.',en:'I live in Cascais.'}]},
+  { title: 'Age', phrases:[{id:'p26',pt:'Quantos anos tens?',en:'How old are you?'},{id:'p27',pt:'Eu tenho cinquenta e quatro anos.',en:"I'm fifty-four years old."},{id:'p28',pt:'Eu tenho cinquenta e três anos.',en:"I'm fifty-three years old."}]},
+  { title: 'Work', phrases:[{id:'p29',pt:'Qual é o teu trabalho?',en:"What's your job?"},{id:'p30',pt:'Eu trabalho em operações e tecnologia.',en:'I work in operations and technology.'},{id:'p31',pt:'Eu sou reformado.',en:"I'm retired."}]},
+  { title: 'Likes & Activities', phrases:[{id:'p32',pt:'O que é que gostas de fazer?',en:'What do you like to do?'},{id:'p33',pt:'Eu gosto de ir à praia.',en:'I like going to the beach.'},{id:'p34',pt:'Eu gosto de comer fora.',en:'I like eating out.'}]}
 ];
 
-const container=document.getElementById('phrasebook');
-const sectionSelect=document.getElementById('sectionSelect');
-const listenRepeatAllBtn=document.getElementById('listenRepeatAllBtn');
-const quizBtn=document.getElementById('quizBtn');
-const quizContainer=document.getElementById('quizContainer');
-const quizSentence=document.getElementById('quizSentence');
-const quizOptions=document.getElementById('quizOptions');
-const quizFeedback=document.getElementById('quizFeedback');
-const nextQuizBtn=document.getElementById('nextQuizBtn');
+/* === Render Phrasebook === */
+const root = document.getElementById('phrasebook');
+const quizArea = document.getElementById('quizArea');
+const quizQuestion = document.getElementById('quizQuestion');
+const quizOptions = document.getElementById('quizOptions');
+const quizFeedback = document.getElementById('quizFeedback');
+const nextQuizBtn = document.getElementById('nextQuizBtn');
 
-let quizPhrases=[];
-let currentQuizIndex=0;
+sections.forEach(sec=>{
+  const h2 = document.createElement('h2');
+  h2.innerText = sec.title;
+  const secBtn = document.createElement('button');
+  secBtn.className='sectionRepeat';
+  secBtn.innerText='Listen & Repeat This Section';
+  secBtn.addEventListener('click',()=>listenRepeat(sec.phrases));
+  h2.appendChild(secBtn);
+  root.appendChild(h2);
 
-// Render sections
-sections.forEach((sec,i)=>{
-  const option=document.createElement('option'); option.value=i; option.textContent=sec.title; sectionSelect.appendChild(option);
-
-  const h2=document.createElement('h2'); h2.textContent=sec.title;
-  const sectionRepeatBtn=document.createElement('button'); sectionRepeatBtn.textContent='Listen & Repeat'; sectionRepeatBtn.className='sectionRepeat';
-  sectionRepeatBtn.addEventListener('click',()=>playAllSequential(sec.phrases)); h2.appendChild(sectionRepeatBtn);
-  container.appendChild(h2);
-
-  const table=document.createElement('table'); const thead=document.createElement('thead');
-  thead.innerHTML='<tr><th>Português</th><th>English</th><th>Audio</th></tr>'; table.appendChild(thead);
-  const tbody=document.createElement('tbody');
+  const table = document.createElement('table');
+  table.innerHTML='<thead><tr><th>Português</th><th>English</th><th>Actions</th></tr></thead><tbody></tbody>';
+  const tbody = table.querySelector('tbody');
 
   sec.phrases.forEach(ph=>{
-    const tr=document.createElement('tr');
-    const tdPt=document.createElement('td'); tdPt.textContent=ph.pt; tdPt.className='pt';
-    const tdEn=document.createElement('td'); tdEn.textContent=ph.en; tdEn.className='en';
-    const tdAudio=document.createElement('td');
+    const tr = document.createElement('tr');
+    const tdPt = document.createElement('td'); tdPt.className='pt'; tdPt.innerText=ph.pt;
+    const tdEn = document.createElement('td'); tdEn.className='en'; tdEn.innerText=ph.en;
+    const tdActions = document.createElement('td'); tdActions.className='actions';
 
-    const playBtn=document.createElement('button'); playBtn.textContent='Play'; playBtn.className='play';
-    playBtn.addEventListener('click',()=>playAudio(ph.id)); tdAudio.appendChild(playBtn);
+    const play = document.createElement('button'); play.className='play'; play.innerText='Play';
+    play.addEventListener('click',()=>playAudio(ph.id,1));
+    tdActions.appendChild(play);
 
-    const playSlowBtn=document.createElement('button'); playSlowBtn.textContent='Play Slow'; playSlowBtn.className='playSlow';
-    playSlowBtn.addEventListener('click',()=>playAudio(ph.id,0.6)); tdAudio.appendChild(playSlowBtn);
+    const slow = document.createElement('button'); slow.className='playSlow'; slow.innerText='Play Slow';
+    slow.addEventListener('click',()=>playAudio(ph.id,0.7));
+    tdActions.appendChild(slow);
 
-    tr.appendChild(tdPt); tr.appendChild(tdEn); tr.appendChild(tdAudio); tbody.appendChild(tr);
+    tr.appendChild(tdPt); tr.appendChild(tdEn); tr.appendChild(tdActions);
+    tbody.appendChild(tr);
   });
-
-  table.appendChild(tbody); container.appendChild(table);
+  root.appendChild(table);
 });
 
-function playAudio(id,speed=1){ const audio=new Audio('audio/'+id+'.mp3'); audio.playbackRate=speed; audio.play(); }
+/* === Audio playback === */
+function playAudio(id,speed=1){
+  const a=new Audio('./audio/'+id+'.mp3'); a.playbackRate=speed; a.play().catch(()=>{});
+}
 
-function playAllSequential(phrases,index=0){ if(index>=phrases.length) return; const audio=new Audio('audio/'+phrases[index].id+'.mp3'); audio.onended=()=>playAllSequential(phrases,index+1); audio.play(); }
+function listenRepeat(phrases,index=0){
+  if(!phrases || phrases.length===0) return;
+  const ph=phrases[index];
+  const a=new Audio('./audio/'+ph.id+'.mp3'); a.play().catch(()=>{
+    const u=new SpeechSynthesisUtterance(ph.pt); u.lang='pt-PT'; speechSynthesis.speak(u);
+  });
+  a.onended=()=>{ setTimeout(()=>{ const next=index+1; if(next<phrases.length) listenRepeat(phrases,next); },600);}
+}
 
-listenRepeatAllBtn.addEventListener('click',()=>{
-  let allPhrases=[]; sections.forEach(sec=>allPhrases=allPhrases.concat(sec.phrases)); playAllSequential(allPhrases);
+/* === Global Listen & Repeat === */
+document.getElementById('globalRepeatBtn').addEventListener('click',()=>listenRepeat(sections.flatMap(s=>s.phrases)));
+
+/* === Quiz Mode === */
+let quizList=[],quizIndex=0,quizScore=0;
+document.getElementById('startQuizBtn').addEventListener('click',()=>{
+  quizList=sections.flatMap(s=>s.phrases); quizList=shuffle(quizList); quizIndex=0; quizScore=0;
+  quizArea.style.display='block';
+  showQuestion();
 });
 
-// Quiz Mode
-quizBtn.addEventListener('click',()=>{
-  const selectedIndex=sectionSelect.value;
-  if(selectedIndex==='all') quizPhrases=sections.flatMap(sec=>sec.phrases);
-  else quizPhrases=sections[selectedIndex].phrases;
-  currentQuizIndex=0; quizContainer.style.display='block'; nextQuiz();
-});
+nextQuizBtn.addEventListener('click',()=>{ quizIndex++; showQuestion(); });
 
-function nextQuiz(){
-  quizFeedback.textContent=''; quizOptions.innerHTML='';
-  if(currentQuizIndex>=quizPhrases.length){ quizSentence.textContent='Quiz completed!'; return; }
-  const phrase=quizPhrases[currentQuizIndex];
-  quizSentence.textContent='What is the Portuguese for: "'+phrase.en+'"?';
-  const options=[phrase.pt];
-  // pick 2 random wrong options
-  let wrongOptions=sections.flatMap(s=>s.phrases.map(p=>p.pt).filter(p=>p!==phrase.pt));
-  wrongOptions.sort(()=>Math.random()-0.5);
-  options.push(wrongOptions[0],wrongOptions[1]); options.sort(()=>Math.random()-0.5);
+function showQuestion(){
+  quizOptions.innerHTML=''; quizFeedback.textContent='';
+  if(quizIndex>=quizList.length){ quizQuestion.textContent=`Quiz complete — score ${quizScore}/${quizList.length}`; return; }
+  const q=quizList[quizIndex];
+  quizQuestion.textContent=`Translate to Portuguese: "${q.en}"`;
+  const wrongPool=sections.flatMap(s=>s.phrases).filter(x=>x.id!==q.id);
+  const wrongs=shuffle(wrongPool).slice(0,3).map(x=>x.pt);
+  const options=shuffle([q.pt,...wrongs]);
   options.forEach(opt=>{
-    const btn=document.createElement('button'); btn.textContent=opt;
-    btn.addEventListener('click',()=>{
-      if(opt===phrase.pt) quizFeedback.textContent='Correct!';
-      else quizFeedback.textContent='Incorrect. Correct answer: '+phrase.pt;
+    const b=document.createElement('button'); b.innerText=opt;
+    b.addEventListener('click',()=>{
+      Array.from(quizOptions.children).forEach(btn=>btn.disabled=true);
+      if(opt===q.pt){b.classList.add('correct'); quizScore++; quizFeedback.textContent='Correct!';}
+      else{b.classList.add('incorrect'); quizFeedback.textContent=`Incorrect — correct: ${q.pt}`;}
     });
-    quizOptions.appendChild(btn);
+    quizOptions.appendChild(b);
   });
 }
-nextQuizBtn.addEventListener('click',()=>{ currentQuizIndex++; nextQuiz(); });
+
+function shuffle(arr){ return arr.slice().sort(()=>Math.random()-0.5);}
 </script>
 </body>
 </html>
+
