@@ -60,7 +60,6 @@
 
   <div id="phrasebook"></div>
 
-  <!-- Libraries for ZIP downloads -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
@@ -112,12 +111,17 @@
     { title:'Likes & Activities', phrases:[
       {id:'p28', pt:'O que é que gostas de fazer?', en:'What do you like to do?'},
       {id:'p29', pt:'Eu gosto de viajar', en:'I like to travel'}
+    ]},
+    { title:'Farewells', phrases:[
+      {id:'p30', pt:'Foi um prazer', en:'It was a pleasure'},
+      {id:'p31', pt:'Fica bem e até à próxima', en:'Take care and see you next time'},
+      {id:'p32', pt:'Igualmente', en:'Likewise / Same to you'},
+      {id:'p33', pt:'Tu também', en:'You too'}
     ]}
   ];
 
   const container = document.getElementById('phrasebook');
 
-  // Render sections
   sections.forEach(section=>{
     const secDiv=document.createElement('div');
     const h2=document.createElement('h2');
@@ -162,14 +166,12 @@
     container.appendChild(secDiv);
   });
 
-  // Audio
   function playAudio(id,rate=1){const a=new Audio('audio/'+id+'.mp3');a.playbackRate=rate;a.play();}
   function repeatSection(section){
     let i=0; const playNext=()=>{if(i<section.phrases.length){playAudio(section.phrases[i].id,1);i++;setTimeout(playNext,3000);}};
     playNext();
   }
 
-  // Quiz System (Global Only)
   const unifiedBtn=document.getElementById('startQuizUnified');
   const unifiedStep=document.getElementById('quizUnifiedStep');
   const globalQuizBox=document.getElementById('globalQuizBox');
@@ -256,22 +258,6 @@
   function closeActiveQuiz(){if(activeQuiz&&typeof activeQuiz.stop==='function')activeQuiz.stop();activeQuiz=null;}
   function generateOptions(correct,pool){const set=new Set([correct]);while(set.size<4){const c=pool[Math.floor(Math.random()*pool.length)];set.add(c);}return Array.from(set).sort(()=>Math.random()-0.5);}
   function shuffle(arr){return arr.sort(()=>Math.random()-0.5);}
-
-  // Download section audio
-  async function downloadSection(section,header){
-    const zip=new JSZip();const msg=header.nextElementSibling;const btn=header.querySelector('.download');
-    msg.textContent='Preparing ZIP...';btn.disabled=true;
-    const total=section.phrases.length;let done=0;
-    for(const ph of section.phrases){
-      const fname=sanitizeFilename(ph.pt)+'.mp3';const url='audio/'+ph.id+'.mp3';
-      try{const r=await fetch(url);if(!r.ok)throw new Error();const blob=await r.blob();zip.file(fname,blob);done++;msg.textContent=`Preparing ZIP... ${Math.round(done/total*100)}%`;}
-      catch{msg.textContent=`⚠️ Missing file: ${ph.id}.mp3`;}
-    }
-    const content=await zip.generateAsync({type:'blob'},m=>{msg.textContent=`Compressing... ${Math.round(m.percent)}%`;});
-    saveAs(content,section.title.replace(/\s+/g,'_')+'.zip');
-    msg.textContent='✅ Download ready!';btn.classList.add('done');btn.disabled=false;setTimeout(()=>{msg.textContent='';btn.classList.remove('done');},4000);
-  }
-  function sanitizeFilename(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'_');}
   </script>
 </body>
 </html>
